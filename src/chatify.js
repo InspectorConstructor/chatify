@@ -11,7 +11,26 @@
 
 var chatty = document.getElementById('chat'),
     chatty_debug = false,
-    silence = false;
+    silence = false,
+    db = window.localStorage;
+
+// make sure you have webstorage
+//if(typeof(Storage) !== "undefined") 
+
+// load some init values
+function initializedb()
+{
+    dbput("hyperecord", "7476");
+    dbput("viewerrecord", "104");
+
+}
+
+// dump db to console
+function dumpdb()
+{
+    console.log( db.valueOf() );
+}
+
 
 // returns an object with the most recent chat message's user and text
 // the returned  object has keys 'user' and 'text'.
@@ -35,27 +54,25 @@ function getLatestMessage()
 // get thing from database
 function dbget(key)
 {
-    //@todo html5 local database stuff
+    db.getItem(key);
 }
 
 // put thing into database
-function dbPut(key, value)
+function dbput(key, value)
 {
-    //@todo html5 local database stuff
+    db.setItem(key, value);
 }
 
 // get hype record from database. kinda needless, but I like it.
-function getHypeRecord(){
-
-    //@todo make this load from the database
-    // return dbget('hyperecord');
-    return "7476";
-
+function getHypeRecord()
+{
+    return dbget('hyperecord');
 }
 
 // same as getHypeRecord, except viewer record
-function getViewerRecord(){
-    return "104";
+function getViewerRecord()
+{
+    return dbget('viewerecord');
 }
 
 // send a chat message, passed as a parameter
@@ -66,11 +83,27 @@ function say(s)
 }
 
 
+function nextFreeQuote()
+{
+    return parseInt(dbget('quoteCount')) + 1 ;
+}
 
-//stubs
-function storequote(q){}
-function getquote(which){}
-function getRandomQuote(){}
+function storequote(q)
+{
+    dbput("quote" + nextFreeQuote(), q);
+}
+
+function getquote(which)
+{
+    return dbget("quote" + which);
+}
+
+function getRandomQuote()
+{
+    //return getquote ( random(parseInt(dbget('quoteCount')))) + 1 ;
+    //@todo
+    return dbget('quote1');
+}
 
 // need to know number of quotes for bounds safety.
 
@@ -96,7 +129,8 @@ function handleCommand(msg)
 
 	//store quote
         case /^!storequote /.test(cmd):
-	    //@todo
+	    //@todo parse quote then storequote("");
+	    say('stored, bruh');
 	    break;
 
 	//get specific quote by number
@@ -117,14 +151,12 @@ function handleCommand(msg)
     return;
 }
 
-
+// callback when someone enters a message in chat
 function AlmightyListener()
 {
-
-    // get the me
+    // get the message
     var message = getLatestMessage();
     handleCommand( message );
-
 
     // debug message if you're so inclined to hear it
     if (chatty_debug) console.debug('listner done!');
@@ -143,7 +175,5 @@ function uninstallListener()
 {
     document.getElementById('chat').removeEventListener("DOMNodeInserted", AlmightyListener);
 }
-
-
 
 //////////////////////////////////////////////////////////////////////////
