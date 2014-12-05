@@ -31,6 +31,11 @@ function dumpdb()
     console.log( db.valueOf() );
 }
 
+//load db from string
+function loaddb()
+{
+    //@todo...
+}
 
 // returns an object with the most recent chat message's user and text
 // the returned  object has keys 'user' and 'text'.
@@ -38,8 +43,6 @@ function getLatestMessage()
 {
     var msg = chatty.lastChild,
 	ret = {};
-
-    // I use classname because I think they are safer than referencing the structure of a message
 
     //message-user
     ret.user = msg.getElementsByClassName('message-user')[0].innerText;
@@ -75,13 +78,24 @@ function getViewerRecord()
     return dbget('viewerecord');
 }
 
-// send a chat message, passed as a parameter
+// send a chat message, passed as a parameter.
+// simulate a user doing it: insert the response into the chat input and simulate an enter keypress.
 function say(s)
 {
-    // @TODO OMG MIXIFY HOW
-    console.log("chatify: " + s);
+    var chat_input = document.getElementById('chat_input'),
+	enterKeyEvent = new KeyboardEvent;
+
+    enterKeyEvent.keyCode = 13; // 13 = ret
+
+    chat_input.value = s;
+    chat_input.dispatchEvent(enterKeyEvent);
 }
 
+// this is sloppy:
+function numberQuotes()
+{ 
+    return nextFreeQuote() - 1; 
+}
 
 function nextFreeQuote()
 {
@@ -98,19 +112,16 @@ function getquote(which)
     return dbget("quote" + which);
 }
 
+// bounds safe get random quote function
 function getRandomQuote()
 {
-    //return getquote ( random(parseInt(dbget('quoteCount')))) + 1 ;
-    //@todo
-    return dbget('quote1');
+    return dbget('quote' + Math.floor((Math.random() * (parseInt(dbget('quoteCount'))))) );
 }
-
-// need to know number of quotes for bounds safety.
 
 // expects a mesage object. runs a command based on the message.
 function handleCommand(msg)
 {
-    var cmd = msg.text ; // c for command
+    var cmd = msg.text ;
 
     // blatant hack from:
     // http://stackoverflow.com/questions/2896626/switch-statement-for-string-matching-in-javascript
@@ -129,24 +140,22 @@ function handleCommand(msg)
 
 	//store quote
         case /^!storequote /.test(cmd):
-	    //@todo parse quote then storequote("");
+	    storequote(cmd.substring(12));
 	    say('stored, bruh');
 	    break;
 
 	//get specific quote by number
         case /^!getquote /.test(cmd):
-	    // more parsing, then call getquote, and then say() it
+	    var num = /\d+/.exec(cmd.substring(10));
+	    if (num === null) return;
+	    say(getquote(num));
 	    break;
 
 	//viewer max
         case /^!viewerrecord/.test(cmd):
-	    //@todo
 	    say("viewer revord is " + getViewerRecord());
 	    break;
 	
-	    // no default, if no matches, then not a command, and bot ignores it.
-	    //default: return;
-
     } // end of switch
     return;
 }
@@ -176,4 +185,15 @@ function uninstallListener()
     document.getElementById('chat').removeEventListener("DOMNodeInserted", AlmightyListener);
 }
 
-//////////////////////////////////////////////////////////////////////////
+// bootstrapping/starting thing
+(function(){
+
+    if ( dbget('initialized') != 'initialized')
+    {
+	initializedb();
+	dbput('initialized', 'initialized');
+    }
+
+    installListener();
+
+})();
