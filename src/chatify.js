@@ -22,7 +22,7 @@ function initializedb()
 {
     dbput("hyperecord", "7476");
     dbput("viewerrecord", "104");
-
+    dbput('quoteCount', '0');
 }
 
 // dump db to console
@@ -69,14 +69,13 @@ function dbput(key, value)
 // get hype record from database. kinda needless, but I like it.
 function getHypeRecord()
 {
-    console
     return dbget('hyperecord');
 }
 
 // same as getHypeRecord, except viewer record
 function getViewerRecord()
 {
-    return dbget('viewerecord');
+    return dbget('viewerrecord');
 }
 
 // send a chat message, passed as a parameter.
@@ -104,9 +103,15 @@ function nextFreeQuote()
     return parseInt(dbget('quoteCount')) + 1 ;
 }
 
+function incrementQuoteCount()
+{
+    return dbput('quoteCount', numberQuotes()+1);
+}
+
 function storequote(q)
 {
     dbput("quote" + nextFreeQuote(), q);
+    incrementQuoteCount();
 }
 
 function getquote(which)
@@ -117,7 +122,10 @@ function getquote(which)
 // bounds safe get random quote function
 function getRandomQuote()
 {
-    return dbget('quote' + Math.floor((Math.random() * (parseInt(dbget('quoteCount'))))) );
+    var qstr = 'quote' + (1+Math.floor( (Math.random() * (parseInt(dbget('quoteCount')))))) ;
+
+    console.log('random choosing: ' + qstr);
+    return dbget(qstr );
 }
 
 // expects a mesage object. runs a command based on the message.
@@ -125,8 +133,7 @@ function handleCommand(msg)
 {
     var cmd = msg.text ;
 
-    // blatant hack from:
-    // http://stackoverflow.com/questions/2896626/switch-statement-for-string-matching-in-javascript
+    // blatant hack from: http://stackoverflow.com/questions/2896626/switch-statement-for-string-matching-in-javascript
     // this way, we can use regexes without a bunch of if/elses!
     switch (true)
     {
@@ -143,21 +150,24 @@ function handleCommand(msg)
 	//store quote
         case /^!storequote /.test(cmd):
 	    storequote(cmd.substring(12));
-	    say('stored, bruh');
+	    say('stored quote ' + numberQuotes() + ' , bruh');
 	    break;
 
 	//get specific quote by number
         case /^!getquote /.test(cmd):
-	    var num = /\d+/.exec(cmd.substring(10));
+	    var num = /\d+/.exec(cmd.substring(9));
 	    if (num === null) return;
 	    say(getquote(num));
 	    break;
 
 	//viewer max
         case /^!viewerrecord/.test(cmd):
-	    say("viewer revord is " + getViewerRecord());
+	    say("viewer record is " + getViewerRecord());
 	    break;
-	
+
+        case /^!numquotes/.test(cmd):
+	    say( numberQuotes() ) ;
+
     } // end of switch
     return;
 }
@@ -197,5 +207,5 @@ function uninstallListener()
     }
 
     installListener();
-
+    say('lemonbot online ^_^');
 })();
