@@ -57,7 +57,7 @@ function getLatestMessage()
 // get thing from database
 function dbget(key)
 {
-    db.getItem(key);
+    return db.getItem(key);
 }
 
 // put thing into database
@@ -69,6 +69,7 @@ function dbput(key, value)
 // get hype record from database. kinda needless, but I like it.
 function getHypeRecord()
 {
+    console
     return dbget('hyperecord');
 }
 
@@ -83,10 +84,11 @@ function getViewerRecord()
 function say(s)
 {
     var chat_input = document.getElementById('chat_input'),
-	enterKeyEvent = new KeyboardEvent;
+        enterKeyEvent = new KeyboardEvent('keydown', {keyCode: 13});
 
-    enterKeyEvent.keyCode = 13; // 13 = ret
-
+    delete enterKeyEvent.keyCode;
+    Object.defineProperty(enterKeyEvent, "keyCode", {"value" : 13});
+    
     chat_input.value = s;
     chat_input.dispatchEvent(enterKeyEvent);
 }
