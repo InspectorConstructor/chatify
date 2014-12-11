@@ -7,7 +7,10 @@
 
    dottoro says DOMNodeInserted is supported in all modern browsers, so we'll use it.
 
+   This Week in Chiptune is great.
+
  */
+
 
 var chatty = document.getElementById('chat'),
     chatty_debug = false,
@@ -165,11 +168,41 @@ function handleCommand(msg)
 	    say("viewer record is " + getViewerRecord());
 	    break;
 
+	    // num quotes in database. (not always all that reliable)
         case /^!numquotes/.test(cmd):
 	    say( numberQuotes() ) ;
+	    break;
+
+	    // patreon
+        case /^!patreon/.test(cmd):
+	    say( "Support the show! http://www.patreon.com/DjCUTMAN" ) ;
+	    break;
+
+	    // twic link
+        case /^!twic/.test(cmd):
+	    say( "See all the episodes at http://ThisWeekInChiptune.com" ) ;
+	    break;
+
+	    // github link
+        case /^!source/.test(cmd):
+	    say( "Help code lemonbot! https://github.com/InspectorConstructor/chatify.git" ) ;
+	    break;
+
+	    // @todo random sc linker
+        case /^!clab/.test(cmd):
+	    say( "follow me on soundcloud" ) ;
+	    break;
+
+	    // bulba bounce. enjoy, Belthesar.
+        case /^!bulbabounce/.test(cmd):
+	    say( "http://i.imgur.com/5hMyuWr.gif" ) ;
+	    break;
+
+        case /^!sanic/.test(cmd):
+	    say('gotta go fast'); //@todo
+	    break;
 
     } // end of switch
-    return;
 }
 
 // callback when someone enters a message in chat
@@ -196,6 +229,18 @@ function uninstallListener()
 {
     document.getElementById('chat').removeEventListener("DOMNodeInserted", AlmightyListener);
 }
+
+/* todo
+function mongo(what, key, value)
+{
+    $.ajax({ url: 'https://api.mongolab.com/api/1/databases?apiKey=NzZ3EzdrYU3sttU7XajppTgbCZf1OXrq',
+	     data: JSON.stringify( { "x" : 1 } ),
+	     type: "POST",
+	     contentType: "application/json" } );
+
+
+}
+*/
 
 // bootstrapping/starting thing
 (function(){
