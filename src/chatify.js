@@ -15,7 +15,9 @@
 var chatty = document.getElementById('chat'),
     chatty_debug = false,
     silence = false,
-    db = window.localStorage;
+    db = window.localStorage,
+    blacklistedUsers = [],
+    admins = ["djcutman", "belthesar", "djchatman"];
 
 // make sure you have webstorage
 //if(typeof(Storage) !== "undefined") 
@@ -88,6 +90,8 @@ function say(s)
     var chat_input = document.getElementById('chat_input'),
         enterKeyEvent = new KeyboardEvent('keydown', {keyCode: 13});
 
+    console.log("saying: " + s);
+
     delete enterKeyEvent.keyCode;
     Object.defineProperty(enterKeyEvent, "keyCode", {"value" : 13});
     
@@ -95,15 +99,15 @@ function say(s)
     chat_input.dispatchEvent(enterKeyEvent);
 }
 
-// this is sloppy:
+
 function numberQuotes()
 { 
-    return nextFreeQuote() - 1; 
+    return parseInt(dbget('quoteCount'));
 }
 
 function nextFreeQuote()
 {
-    return parseInt(dbget('quoteCount')) + 1 ;
+    return numberQuotes()+ 1 ;
 }
 
 function incrementQuoteCount()
@@ -128,13 +132,14 @@ function getRandomQuote()
     var qstr = 'quote' + (1+Math.floor( (Math.random() * (parseInt(dbget('quoteCount')))))) ;
 
     console.log('random choosing: ' + qstr);
-    return dbget(qstr );
+    return "qstr: " + dbget(qstr);
 }
 
 // expects a mesage object. runs a command based on the message.
 function handleCommand(msg)
 {
-    var cmd = msg.text ;
+    var cmd  = msg.text, 
+	user = msg.user;
 
     // blatant hack from: http://stackoverflow.com/questions/2896626/switch-statement-for-string-matching-in-javascript
     // this way, we can use regexes without a bunch of if/elses!
@@ -185,12 +190,12 @@ function handleCommand(msg)
 
 	    // github link
         case /^!source/.test(cmd):
-	    say( "Help code lemonbot! https://github.com/InspectorConstructor/chatify.git" ) ;
+	    say( "know javascript? node.js? Help code lemonbot! https://github.com/InspectorConstructor/chatify.git" ) ;
 	    break;
 
 	    // @todo random sc linker
         case /^!clab/.test(cmd):
-	    say( "follow me on soundcloud" ) ;
+	    say( "aye, check mah soundcloud" ) ;
 	    break;
 
 	    // bulba bounce. enjoy, Belthesar.
@@ -200,6 +205,23 @@ function handleCommand(msg)
 
         case /^!sanic/.test(cmd):
 	    say('gotta go fast'); //@todo
+	    break;
+
+        case /^!sorry /.test(cmd):
+
+	    if (isAdmin(user)){
+		blacklist(cmd.substring(6));
+		say('sorry ' + user);
+	    }
+	    break;
+
+
+        case /^!sorry /.test(cmd):
+
+	    if (isAdmin(user)){
+		makeAdmin(cmd.substring(6));
+		say('promotion to ' + user);
+	    }
 	    break;
 
     } // end of switch
@@ -217,6 +239,7 @@ function AlmightyListener()
 
 }
 
+
 // install the listener
 function installListener()
 {
@@ -230,6 +253,32 @@ function uninstallListener()
     document.getElementById('chat').removeEventListener("DOMNodeInserted", AlmightyListener);
 }
 
+/***** permissions magic *****/
+function blacklist(username)
+{
+    blacklistedUsers.push(username);
+    console.log('blacklisted ' + username);
+}
+
+
+function isBlacklisted(username)
+{
+    return blacklistedUsers.indexOf(username) != -1;
+}
+
+function isAdmin(username)
+{   // lowercase for now bcos i dont know how they are spelled properly
+    return admins.indexOf(username.toLowerCase()) != -1;
+}
+
+function makeAdmin(username)
+{
+    admins.push(username);
+    console.log('promoted ' + username);
+}
+
+
+
 /* todo
 function mongo(what, key, value)
 {
@@ -237,8 +286,6 @@ function mongo(what, key, value)
 	     data: JSON.stringify( { "x" : 1 } ),
 	     type: "POST",
 	     contentType: "application/json" } );
-
-
 }
 */
 
