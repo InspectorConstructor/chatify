@@ -158,7 +158,7 @@ function handleCommand(msg)
 	//store quote
         case /^!storequote /.test(cmd):
 	    storequote(cmd.substring(12));
-	    say('stored quote ' + numberQuotes() + ' , bruh');
+	    say('stored quote ' + numberQuotes());
 	    break;
 
 	//get specific quote by number
